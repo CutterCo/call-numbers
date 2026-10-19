@@ -172,6 +172,8 @@
     font:inherit; font-size:16px; font-weight:700; color:var(--ink); cursor:pointer;
     min-height:48px; padding:0 20px; border-radius:8px;
     border:1.5px solid #8a8373; background:transparent;
+    /* Touch: a long press is a tap, never a text selection or callout */
+    -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; touch-action:manipulation;
   }
   button:where(:not(.primary, .pick, .book, .gap, .opt, .ol-item, .btn-cream)):hover:not(:disabled){ background:#efe9dd; }
   button.primary{ background:#13201a; border-color:#13201a; color:#fff; }
@@ -295,13 +297,15 @@
     .app{ min-height:0; }   /* a full-height shell spills onto a blank second page */
     main{ max-width:none; padding:0; }
     .card.results{ max-width:none; box-shadow:none; margin:0; }
-    /* The printout starts with the name and the score; the close is for the screen */
-    .results > h1, .r-summary{ display:none; }
+    /* The printout starts with the name and the score; the close and the shift
+       advice are for the screen, and leaving them off keeps the results to one page */
+    .results > h1, .r-summary, .r-shift{ display:none; }
     .r-print-who{ display:flex; justify-content:space-between; gap:24px; margin:0; padding-bottom:6px;
       border-bottom:1px solid var(--ink); font-size:18px; font-weight:700; }
     #r-print-name:not(:empty)::before{ content:" \2014  "; }
     .r-print-date{ flex:none; white-space:nowrap; font-weight:400; color:var(--text-3); }
     main .r-score{ margin-top:14px; font-size:26px; }
+    .r-cols{ grid-template-columns:1fr 1fr; }   /* side by side at any page margin */
     /* The review sheet follows its box, whichever way printing starts (button, Ctrl+P, Share > Print) */
     body:has(#r-sheet-on:checked) .r-sheet{ display:block; break-before:page; }
   }
@@ -427,7 +431,10 @@
   .intro-lede{ margin:0 0 22px; color:var(--text-2); max-width:62ch; }
   .intro-facts div{ grid-template-columns:104px 1fr; }
   .intro-facts{ margin-bottom:24px; }
-  .intro-hero .bar{ margin-top:0; }
+  .intro-los{ max-width:68ch; }
+  .intro-los h2{ margin-top:0; }
+  .intro-los p{ margin:0; }
+  .intro-los ol{ margin:6px 0 0; }
   .intro-figure{ margin:0; padding-right:8px; }
   .intro-figure .spine{ font-size:30px; padding:16px 22px; box-shadow:5px 5px 0 rgba(31,61,50,.18); }
   .intro-figure .spine .spine-line{ line-height:44px; min-height:44px; }
@@ -523,8 +530,7 @@
   .row-head button.link{ font-size:15px; line-height:20px; padding:12px 8px; margin:-12px -8px; }
   /* Empty tray: one line, as tall as the books were, so the shelf doesn't jump */
   .tray-empty{ flex:1; display:flex; align-items:center; justify-content:center; margin:0;
-               min-height:calc(var(--cn-lines) * 22px + 28px); font-size:15px; color:var(--text-3); }
-  .tray3, .shelf2.slots{ display:flex; justify-content:flex-start; gap:18px; }
+               min-height:calc(var(--cn-lines) * 22px + 28px); font-size:15px; color:var(--text-3); }  .tray3, .shelf2.slots{ display:flex; justify-content:flex-start; gap:18px; }
   .tray3 > :first-child, .shelf2.slots > :first-child{ margin-left:auto; }
   .tray3 > :last-child, .shelf2.slots > :last-child{ margin-right:auto; }
   .tray3{ padding:0 14px; min-height:0; }
@@ -540,12 +546,34 @@
   /* Test 2: the tag sits in the shelf's top padding, so the row doesn't grow */
   .shelf2:not(.slots) button.book{ position:relative; }
   .shelf2:not(.slots) .flag-tag{ visibility:visible; position:absolute; top:-14px; left:50%; transform:translateX(-50%); margin:0; }
+  /* Test 2, placed but not submitted: "Your book" above it and a marigold ring */
+  .flag-tag.mine{ color:var(--ink); }
+  .shelf2 button.book.mine:not(.selected) .spine{ border-color:var(--amber); box-shadow:0 0 0 3px var(--marigold); }
   button.gap.slot-n span{ font:700 22px var(--sans); }   /* number in its own font; the box stays label-sized */
   button.gap.slot-n.ready{ color:var(--green-700); }
+  /* Test 3: the tray's return slot, shown while a shelf book is lifted */
   button.gap.ghost{ display:flex; align-items:center; justify-content:center; padding:4px;
-                    color:var(--text-3); }
+                    color:var(--green-700); }
   button.gap.ghost span{ font:700 15px/1.3 var(--sans); letter-spacing:0; }
-  button.gap.ghost:hover{ border-color:var(--green-700); }
+  /* Warm-up: a sandbox, not a test card. Dashed frame, tinted, no marigold edge;
+     a badge in the stamp's lettering; the steps as a strip that ticks off */
+  .card.warm{ border:2px dashed var(--green-700); background:#fbf8f1; box-shadow:none; }
+  .warm-badge{ margin:0; padding:3px 10px; border:2px solid var(--green-700); border-radius:4px;
+               font:700 14px/1.3 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--green-700); }
+  .q-head button.link{ font-size:15px; }
+  .warm-steps{ display:flex; flex-wrap:wrap; gap:10px 22px; margin:14px 0 4px; padding:12px 16px; list-style:none;
+               background:#fff; border:1px solid var(--line); border-radius:8px; font-size:16px; font-weight:700; }
+  .warm-steps + .cart-status{ margin-top:12px; }   /* Test 3's status line, under the strip */
+  .warm-steps li{ display:flex; align-items:center; gap:8px; color:var(--text-3); }
+  .ws-n{ flex:none; display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%;
+         border:2px solid var(--text-3); font-size:14px; }
+  .warm-steps li.now{ color:var(--ink); }
+  .warm-steps li.now .ws-n{ border-color:var(--ink); background:var(--marigold); }
+  .warm-steps li.done{ color:var(--ok); }
+  .warm-steps li.done .ws-n{ border-color:var(--ok); background:var(--ok); color:#fff; }
+  /* Warm-up books: a label-sized box with one large number, not a call number */
+  .warm .spine{ justify-content:center; }
+  .warm .spine .spine-line{ font-size:30px; line-height:36px; min-height:36px; }
   .opt-dot{ flex:none; width:20px; height:20px; border-radius:50%; border:2px solid var(--text-3); background:#fff; }
   button.opt.selected{ border-color:#13201a; background:#f3efe6; }   /* dark border, tint, filled dot */
   button.opt.selected .opt-dot{ border-color:#13201a; background:#13201a; box-shadow:inset 0 0 0 3px #fff; }
@@ -843,7 +871,7 @@ const MODULES = [
       { visual:"words",
         text:"One general principle that applies to every line of a call number is that <b>nothing is shelved before something</b>. Compare the words <i>pen</i> and <i>penguin</i>. They share the first three letters, but <i>pen</i> ends first, so it comes first in a dictionary. Call numbers work the same way." },
       { visual:"shelf",
-        text:"On the shelf, books run in call-number order from <b>left to right</b>, and then carry on to the next shelf." },
+        text:"On the shelf, books run in call-number order from <b>left to right</b>." },
     ] },
   { id:"m1", title:"The letter line", showLines:["letters"],
     steps:[
@@ -868,7 +896,7 @@ const MODULES = [
     ] },
   { id:"m2", title:"The number line", showLines:["letters","number"],
     steps:[
-      { text:"Under the letter line is the <b>number line</b>. Read the numbers <b>before the decimal point</b> as a <b>whole number</b>. Our book shows <b>350</b>, read as three hundred fifty.",
+      { text:"Under the letter line is the <b>number line</b>. Read it as a <b>whole number</b>. Our book shows <b>350</b>, read as three hundred fifty.",
         items:["ps350m4"], light:"number", labels:true },
       { text:"If we are comparing two books with identical letter lines, we would look to the number line to determine the shelf order. In this case, <b>ninety-one</b> is smaller than <b>three hundred fifty</b>, so the PS 91 book shelves first.",
         items:["ps91m4","ps350m4"], light:"number", dim:true, labels:true },
@@ -882,7 +910,7 @@ const MODULES = [
         items:["hq1191a65","hq1190a65"], correct:"hq1190a65",
         feedback:{ correct:"Both letter lines are HQ, and 1190 comes before 1191, so HQ 1190 shelves first.",
                    incorrect:{ hq1191a65:"Both letter lines are HQ, so look at the number line. Which is smaller, 1190 or 1191?" } },
-        hints:["Read the number before the decimal point as a whole number."] },
+        hints:["Read the number line as a whole number."] },
       { id:"m2-p02", type:"pick", /* decimal vs decimal (.85 < .9) */
         prompt:"Which book shelves first?",
         items:["qa7685k47","qa769k47"], correct:"qa7685k47",
@@ -896,7 +924,7 @@ const MODULES = [
         items:["ps350m4"], light:"cutter", labels:true },
       { text:"First, compare the Cutter number <b>by its letter</b>. In this case, <b>M</b> comes before <b>T</b>, so our book shelves first. If the letters are different, the numbers don't matter.",
         items:["ps350m4","ps350t2"], light:"cutterLetter", dim:true, labels:true },
-      { text:"Some call numbers have <b>two Cutter numbers</b>, one under the other. If the first Cutter numbers match, compare the second one the same way. Here both books have <b>M4</b>, so we move down: <b>A</b> comes before <b>B</b>, so the A27 book shelves first.",
+      { text:"Some call numbers have <b>two Cutter numbers</b>, one after another. If the first Cutter numbers match, compare the second one the same way. Here both books have <b>M4</b>, so we move down: <b>A</b> comes before <b>B</b>, so the A27 book shelves first.",
         items:["ps350m4a27","ps350m4b2"], light:"cutterLetter", at:3, dim:true, labels:true },
       { text:"If one book has a second Cutter number and the other doesn't, remember that <b>nothing is shelved before something</b>. The book with only one Cutter number is shelved first.",
         items:["ps350m4","ps350m4b2"], missing:{ ps350m4:"cutter" }, light:"cutter", at:3, dim:true, labels:true, next:"Try it yourself" },
@@ -934,7 +962,7 @@ const MODULES = [
     ] },
   { id:"m5", title:"The date line", showLines:["letters","number","cutter","date"],
     steps:[
-      { text:"After the Cutter number, the call number often contains the book's <b>year of publication</b>. For our book, the call number reads <b>2012</b>, indicating when it was published. This line only decides the shelf order when every line above is tied.",
+      { text:"After the Cutter number, the call number often contains the book's <b>year of publication</b>. For our book, the call number reads <b>2012</b>, indicating when it was published. This line only decides the shelf order when every line above matches.",
         items:["ps350m4"], light:"date", labels:true },
       { text:"For example, two editions of a book published at different times may have the same call number on every other line. In this case, the year <b>2012</b> would be shelved before the year <b>2019</b>.",
         items:["ps350m4","ps350m4y19"], light:"date", dim:true, labels:true },
@@ -956,6 +984,27 @@ const MODULES = [
 
 /* Test 3 hint: one for every set, a deliberate fade of the scaffolding */
 const T3_HINT = "Break it down: compare two books at a time, reading each label from the top, then add the next book.";
+
+/* Warm-ups: one unscored question before Question 1 of Tests 2 and 3, to learn
+   the controls before they count. The books are numbered 1–5, not call
+   numbers; they order by number through compare() like any other book. No
+   hint, nothing recorded; done (or skipped) once per test (state.warm). */
+["1","2","3","4","5"].forEach(n => { CALLNOS["w" + n] = { id:"w" + n, warm:true, lines:[n], clsL:"", clsN:Number(n),
+  clsF:null, cutL:"", cutN:null, extra:[] }; });
+const WARMUPS = {
+  t2:{ id:"t2-warm", type:"place", warm:true, prompt:"Practice round: moving books",
+       sub:"Put book 3 between books 2 and 4.",
+       steps:["Select the book", "Select a slot", "Submit"],
+       tray:"w3", shelf:["w1","w2","w4","w5"], hints:[""],
+       feedback:{ correct:"That's it. The questions work the same way.",
+                  wrong:"Book 3 goes between books 2 and 4. Select it on the shelf, then select that slot." } },
+  t3:{ id:"t3-warm", type:"order", warm:true, prompt:"Practice round: moving books",
+       sub:"Put books 1, 2 and 3 in order.",
+       steps:["Select a book", "Select a slot", "To take one back: select it, then Return to tray", "Submit"],
+       tray:["w3","w1","w2"], pairs:[], hints:[""],
+       feedback:{ correct:"That's it. The questions work the same way, with five books.",
+                  wrong:"The books go 1, 2, 3 from left to right. Select a book on the shelf, then another slot: if it's full, the two books swap.", traps:[] } },
+};
 
 const TESTS = [
   /* Test 1: six pairs, graded easy to hard. Q1–Q2 differ in one line only
@@ -1150,7 +1199,7 @@ const TESTS = [
 ];
 
 /* ---------- State (persists locally, restart clears) ---------- */
-const STORE_KEY = "lctut-state-v2";
+const STORE_KEY = "lctut-state-v3";
 const VIEWS = ["intro","m0","m1","m2","m3","m4","m5","t1","t2","t3","results"];
 const modById = id => MODULES.find(m => m.id === id);
 const testById = id => TESTS.find(t => t.id === id);
@@ -1171,9 +1220,10 @@ let printoutName = "";
      reveal[moduleId]  lesson steps shown
      tq[testId]        test question showing
      pq[moduleId]      practice question showing
-     started[testId]   past the test's intro card */
+     started[testId]   past the test's intro card
+     warm[testId]      the test's warm-up done or skipped */
 function freshState(){
-  return { view:"intro", q:{}, reveal:{}, tq:{}, started:{}, pq:{} };
+  return { view:"intro", q:{}, reveal:{}, tq:{}, started:{}, pq:{}, warm:{} };
 }
 /* Saved data may be old or damaged: keep only what has the expected shape,
    so a bad save can never leave the page without a screen to show */
@@ -1214,6 +1264,7 @@ function cleanState(s){
   st.tq = intMap(s.tq);
   st.pq = intMap(s.pq);
   for (const [id, on] of Object.entries(isObj(s.started) ? s.started : {})) if (on === true) st.started[id] = true;
+  for (const [id, on] of Object.entries(isObj(s.warm) ? s.warm : {})) if (on === true) st.warm[id] = true;
   return st;
 }
 function loadState(){
@@ -1337,6 +1388,7 @@ const missingAt = (cn, role) => role === "date" ? cn.lines.length : lineRoles(cn
 /* What a screen reader hears for a (possibly part-blanked) spine. named = say
    each line's name too, where the line key is on screen (lessons, Test 1) */
 function spineSpeech(cn, show, named, missing){
+  if (cn.warm) return "Book " + cn.lines[0];   // warm-up books are numbered, not call numbers
   const roles = lineRoles(cn);
   // A Cutter is read one character at a time ("E 2 4 4"), never as a whole
   // number ("E two hundred forty-four"), which is the reading the lessons correct
@@ -1654,6 +1706,7 @@ function wireShell(){            // once: delegated clicks for shell + forward c
     else if (a === "next-p") goPractice(1);
     else if (a === "prev-p") goPractice(-1);
     else if (a === "start-test") startTest(testById(state.view), true);
+    else if (a === "end-warm") endWarm(testById(state.view));
     else if (a === "print") window.print();
     else if (a === "open-q") openQuestion(t.dataset.test, +t.dataset.i);
   });
@@ -1738,7 +1791,7 @@ function focusAction(section){
 
 /* ---------- Intro ---------- */
 function renderIntro(){
-  // What the learner needs to begin sits above the fold; the reference detail folds away below
+  // Purpose, facts and objectives, then Start; the reference detail folds away below it
   $("#view").innerHTML = `
     <div class="intro-hero">
       <div class="intro-text">
@@ -1752,21 +1805,21 @@ function renderIntro(){
           <div><dt>Assessment</dt><dd>Practice questions in the lessons are not scored. In the tests, your first try on each question shows you what to work on next.
             Your results appear on the Results screen at the end, and you can print them.</dd></div>
         </dl>
-        <div class="bar start"><button type="button" class="primary" data-go="m0">Start →</button></div>
       </div>
       <figure class="intro-figure">${spineHTML(CALLNOS.ps350m4)}</figure>
     </div>
+    <section class="intro-los" aria-labelledby="intro-los-h">
+      <h2 id="intro-los-h">Learning objectives</h2>
+      <p>By the end of this tutorial, you will be able to:</p>
+      <ol>
+        <li>Name the parts of a call number and explain how each one is ordered.</li>
+        <li>Tell which part of a call number decides which book is shelved first.</li>
+        <li>Shelve a set of books in the right order, even when more than one rule is involved.</li>
+      </ol>
+    </section>
+    <div class="bar start"><button type="button" class="primary" data-go="m0">Start →</button></div>
     <h2 class="sr">About this tutorial</h2>
     <div class="intro-more">
-      <details open>
-        <summary>Learning objectives</summary>
-        <p>By the end of this tutorial, you will be able to:</p>
-        <ol>
-          <li>Name the parts of a call number and explain how each one is ordered.</li>
-          <li>Tell which part of a call number decides which book is shelved first.</li>
-          <li>Shelve a set of books in the right order, even when more than one rule is involved.</li>
-        </ol>
-      </details>
       <details>
         <summary>Contents</summary>
         <p>The tutorial includes the following sections:</p>
@@ -1821,9 +1874,8 @@ const VISUALS = {
     const ids = byShelf(["q76s1","ps350m4","e92a65","pr6037o98","ml420b542006","b76s1"]);
     const book = (id, k) => `<div class="mini-book"><span class="mini-n">${k + 1}</span>${spineHTML(CALLNOS[id])}</div>`;
     return `<div class="visual shelf-demo" role="img"
-        aria-label="Two shelves of books, numbered 1 to 6 in call-number order: left to right on the top shelf, then left to right on the shelf below.">
-      <div class="shelf-row">${ids.slice(0, 3).map((id, k) => book(id, k)).join("")}</div>
-      <div class="shelf-row">${ids.slice(3).map((id, k) => book(id, k + 3)).join("")}</div>
+        aria-label="A shelf of six books, numbered 1 to 6 in call-number order from left to right.">
+      <div class="shelf-row">${ids.map(book).join("")}</div>
     </div>`;
   },
 };
@@ -2112,7 +2164,8 @@ function testIntroHTML(t){
     <p class="meta">${esc(shortName(t.id))}</p>
     <h1 id="t-intro-h" tabindex="-1">${esc(t.questions[0].prompt)}</h1>
     <p class="t-task">${esc(t.introCard.why)}</p>
-    <dl class="t-facts">
+    <dl class="t-facts">${WARMUPS[t.id] ? `
+      <div><dt>First</dt><dd>A quick practice round to learn the controls. Not scored.</dd></div>` : ""}
       <div><dt>Results</dt><dd>Your first try on each question shows you what to work on next. Answer each question correctly to move on.</dd></div>
       <div><dt>Length</dt><dd>${t.questions.length} questions</dd></div>
       <div><dt>Next</dt><dd>${esc(next)}</dd></div>
@@ -2122,6 +2175,7 @@ function testIntroHTML(t){
 }
 function renderTest(t){
   if (showIntro(t)){ $("#view").innerHTML = testIntroHTML(t); return; }
+  if (showWarm(t)){ renderWarm(t); return; }
   const i = testAt(t), q = t.questions[i];
   const [html, wire] = q.type === "mcq" ? [mcqHTML, wireMCQ] : q.type === "place" ? [placeHTML, wirePlace] : [orderHTML, wireOrder];
   $("#view").innerHTML = html(t, q, i);
@@ -2132,6 +2186,52 @@ function renderTest(t){
     updateProgress(t.id, wasDone);
     focusAction(section);
   });
+}
+/* Warm-up card: after Start test, before Question 1, until done or skipped.
+   Once Question 1 has an answer it is never shown again */
+const showWarm = t => !!WARMUPS[t.id] && !state.warm[t.id] && !testAnswered(t);
+const warmHeadHTML = t => `<div class="q-head"><p class="warm-badge">${esc(shortName(t.id))} practice · Not scored</p>
+    <button type="button" class="link warm-skip" data-act="end-warm">Skip to Question 1</button></div>`;
+/* The warm-up's steps as a numbered strip; each ticks once the learner has done it */
+const warmStepsHTML = (q, done) => `<ol class="warm-steps">${q.steps.map((st, i) => {
+  const on = done.has(i), now = !on && [...q.steps.keys()].find(k => !done.has(k)) === i;
+  return `<li class="${on ? "done" : now ? "now" : ""}"><span class="ws-n" aria-hidden="true">${on ? "✓" : i + 1}</span>` +
+    `${esc(st)}${on ? `<span class="sr"> (done)</span>` : ""}</li>`; }).join("")}</ol>`;
+function warmNavHTML(done){
+  return { l:`<button type="button" data-act="prev-q">← Test overview</button>`,
+           r:done ? `<button type="button" class="primary" data-act="end-warm">Start Question 1 →</button>` : "" };
+}
+function renderWarm(t){
+  const q = WARMUPS[t.id];
+  const [html, wire] = q.type === "place" ? [placeHTML, wirePlace] : [orderHTML, wireOrder];
+  $("#view").innerHTML = html(t, q, 0);
+  const section = $(`[data-qid="${q.id}"]`);
+  // Tick the steps as they happen, read from the controls after each click (sticky)
+  const done = new Set(), last = q.steps.length - 1;
+  const strip = () => { section.querySelector(".warm-steps").outerHTML = warmStepsHTML(q, done); };
+  section.querySelector(".sub").insertAdjacentHTML("afterend", warmStepsHTML(q, done));
+  wire(section, q, () => {                         // after each Submit; right: the way on replaces Skip
+    const ok = !!section.querySelector(".stamp--correct");
+    setNav(section, warmNavHTML(ok));
+    section.querySelector(".warm-skip").hidden = ok;
+    focusAction(section);
+  });
+  // Registered after the controls' own listener, so it reads the updated controls
+  section.addEventListener("click", e => {
+    const has = sel => !!section.querySelector(sel);
+    if (has(".book.selected") || has('[data-k="placed"]') || has(".slots .book")) done.add(0);
+    if (has('[data-k="placed"]') || has(".slots .book")) done.add(1);
+    if (q.type === "order" && e.target.closest('[data-k="back"], .return-btn, .clear-btn')) done.add(2);
+    if (has(".stamp, .note.last")) done.add(last);
+    strip();
+  });
+}
+function endWarm(t){
+  state.warm[t.id] = true;
+  state.tq[t.id] = 0;
+  saveState();
+  render();
+  focusQuiet(`#q-head-${t.id}`);
 }
 function goQuestion(step){
   const t = testById(state.view);
@@ -2294,6 +2394,7 @@ function wireMCQ(section, q, afterSubmit){
 /* The prompt is the page h1, with any method line under it; the card is
    compact (Tests 2–3 keep their full width for the shelf row) */
 const cardCls = t => " compact" + (t.wideCard ? " wide-card" : "");
+const WARM_SIZE = "--cn-lines:4;--cn-chars:4";   // warm-up books: the size of a short real label
 const promptHTML = (q, id) =>
   `<h1 class="prompt"${id ? ` id="${id}"` : ""}>${esc(q.prompt)}</h1>` +
   (q.sub ? `<p class="sub">${esc(q.sub)}</p>` : "");
@@ -2301,15 +2402,15 @@ function placeHTML(t, q, i){
   const cns = [q.tray, ...q.shelf].map(id => CALLNOS[id]);
   // Lines longer than 5 characters (LB 1028.43): trimmed labels, so the shelf fits a tablet
   const trim = Math.max(...cns.flatMap(c => c.lines.map(l => l.length))) > 5 ? " trim" : "";
-  return `<section class="question card uniform${trim}${cardCls(t)}" data-qid="${q.id}" style="${sizeStyle(cns)}">
-    ${qHeadHTML(t, i)}
+  return `<section class="question card uniform${trim}${cardCls(t)}${q.warm ? " warm" : ""}" data-qid="${q.id}" style="${q.warm ? WARM_SIZE : sizeStyle(cns)}">
+    ${q.warm ? warmHeadHTML(t) : qHeadHTML(t, i)}
     ${promptHTML(q)}
     <div class="cart"><div class="cart-slot"></div>
       <div><p class="cart-title">Book to shelve</p><p class="cart-status" role="status"></p></div></div>
     <div class="shelf-scroll"><div class="shelf2" role="group" aria-label="Shelf, left to right"></div></div>
     <div class="hint-slot"></div>
     <div class="feedback-slot"></div>
-    ${actionsHTML(qNavHTML(t, i), `<button type="button" class="return-btn" disabled>Return to tray</button>`)}
+    ${actionsHTML(q.warm ? warmNavHTML(false) : qNavHTML(t, i), `<button type="button" class="return-btn" disabled>Return to tray</button>`)}
   </section>`;
 }
 /* Fade the shelf row's edges where there is more shelf to scroll to */
@@ -2345,6 +2446,7 @@ const setStatus = (el, text) => { if (el.textContent !== text) el.textContent = 
 const stampWord = (q, ok) => !ok ? "Not quite" : q.type === "mcq" ? "Correct" : "Shelved";
 /* Draw the stamp; returns what a screen reader hears (the heading word, then the text) */
 function showStamp(slot, q, ok, msg){
+  if (ok && q.type !== "mcq") msg = "Correct! " + msg;   // under "Shelved"; Test 1's heading already says it
   slot.innerHTML = `<div class="stamp stamp--${ok ? "correct" : "incorrect"}">` +
     `<p class="stamp-head">${stampWord(q, ok)}</p><p class="stamp-body">${msg}</p></div>`;
   return stampWord(q, ok) + ". " + stripHtml(msg);
@@ -2376,7 +2478,8 @@ function wirePlace(section, q, afterSubmit){
   const book = (key, extra, label, opt) =>
     `<button type="button" class="book${extra}" data-k="${key}" aria-pressed="${extra.includes("selected")}"` +
     `${done ? " disabled" : ""} aria-label="${esc(label)}">` +
-    (extra.includes(" flag") ? `<span class="flag-tag" aria-hidden="true">${CROSS}</span>` : "") +
+    (extra.includes(" flag") ? `<span class="flag-tag" aria-hidden="true">${CROSS}</span>`
+      : extra.includes(" mine") ? `<span class="flag-tag mine" aria-hidden="true">Your book</span>` : "") +
     `${spineHTML(T, opt)}</button>`;
 
   function refresh(focusKey){
@@ -2387,7 +2490,7 @@ function wirePlace(section, q, afterSubmit){
     let html = "";
     for (let g = 0; g <= shelf.length; g++){
       html += pos === g
-        ? book("placed", (sel === "shelf" ? " selected" : "") + (done ? " correct" : "") + (wrong ? " flag" : ""),
+        ? book("placed", (sel === "shelf" ? " selected" : "") + (done ? " correct" : wrong ? " flag" : " mine"),
             cnText(T) + ", placed " + lowerFirst(gapLabel(g)) + (wrong ? ", not here" : "") + (done ? "" : ". Select to move it"),
             done ? { marks:marks.T, dim:true } : {})
         : `<button type="button" class="gap${sel && !done ? " ready" : ""}" data-k="gap${g}"` +
@@ -2403,7 +2506,8 @@ function wirePlace(section, q, afterSubmit){
       : pos !== null ? "On the shelf. Select it to move it, or select Submit."
       : "Select it to pick it up.");
     returnBtn.disabled = pos === null;
-    returnBtn.hidden = hintBtn.hidden = submitBtn.hidden = done;   // once correct, only the way on
+    returnBtn.hidden = submitBtn.hidden = done;           // once correct, only the way on
+    hintBtn.hidden = done || !!q.warm;                    // no hint in a warm-up
     setSubmit(submitBtn, !done && pos !== null);
     const el = focusKey && section.querySelector(`[data-k="${focusKey}"]`);
     if (el && !el.disabled) el.focus({ preventScroll:true });
@@ -2453,19 +2557,19 @@ function wirePlace(section, q, afterSubmit){
   const closeHint = wireHint(section, q);
   function result(restore){       // restore = redraw the last submitted answer, unscored
     const ok = pos === answer;
-    if (!restore) record(q.id, ok, pos);
+    if (!restore && !q.warm) record(q.id, ok, pos);
     let msg;
     if (ok){
       done = true; sel = null;
       // Light the deciding line against each neighbour (marked only when correct)
       const L = shelf[pos - 1], R = shelf[pos], mk = d => ({ light:TAG_LIGHT[d.key], at:d.at });
       const dl = L && firstDiffer(L, T), dr = R && firstDiffer(T, R);
-      marks = { T:[dl, dr].filter(Boolean).map(mk) };
-      if (L) marks[pos - 1] = [mk(dl)];
-      if (R) marks[pos] = [mk(dr)];
+      marks = { T:q.warm ? [] : [dl, dr].filter(Boolean).map(mk) };   // warm-up: nothing to light
+      if (L && !q.warm) marks[pos - 1] = [mk(dl)];
+      if (R && !q.warm) marks[pos] = [mk(dr)];
       msg = testFeedback(q, true);
     } else {
-      msg = t2Wrong(q, pos);                                  // trap for this slot, or generated
+      msg = q.warm ? q.feedback.wrong : t2Wrong(q, pos);      // trap for this slot, or generated
       wrong = true; sel = null;                               // the book stays where it was placed, tagged
     }
     const said = showStamp(slot, q, ok, msg);
@@ -2493,9 +2597,9 @@ function wirePlace(section, q, afterSubmit){
 /* ---------- Ordering (Test 3) ----------
    Books start in the tray (fixed order). Select a book, then a numbered slot
    on the shelf; a filled slot swaps (the book already there goes back to the
-   tray, or trades places with a shelf book). A placed book leaves a dashed
-   outline in the tray ("In 2nd slot"); selecting it takes the book back.
-   Once every book is placed the tray is one line of text. Return to tray
+   tray, or trades places with a shelf book). The tray holds only the books
+   still in it, a returned book at the end; while a shelf book is lifted, a
+   return slot follows them, and selecting it takes the book back. An empty tray is one line of text. Return to tray
    and Clear the shelf (a link by the Shelf label, from two books on) undo;
    Submit once every slot is full.
    Scored by the set's two designated pairs (relative order, first submit).
@@ -2503,8 +2607,8 @@ function wirePlace(section, q, afterSubmit){
    on the shelf, with trap or generated feedback about that pair; no
    lines lit. Correct: green outlines, no highlighting. */
 function orderHTML(t, q, i){
-  return `<section class="question card uniform${cardCls(t)}" data-qid="${q.id}" style="${sizeStyle(q.tray.map(id => CALLNOS[id]))}">
-    ${qHeadHTML(t, i)}
+  return `<section class="question card uniform${cardCls(t)}${q.warm ? " warm" : ""}" data-qid="${q.id}" style="${q.warm ? WARM_SIZE : sizeStyle(q.tray.map(id => CALLNOS[id]))}">
+    ${q.warm ? warmHeadHTML(t) : qHeadHTML(t, i)}
     ${promptHTML(q)}
     <p class="cart-status" role="status"></p>
     <p class="row-label">Tray</p>
@@ -2513,7 +2617,7 @@ function orderHTML(t, q, i){
     <div class="shelf2 slots" role="group" aria-label="Shelf, left to right"></div>
     <div class="hint-slot"></div>
     <div class="feedback-slot"></div>
-    ${actionsHTML(qNavHTML(t, i), `<button type="button" class="return-btn" disabled>Return to tray</button>`)}
+    ${actionsHTML(q.warm ? warmNavHTML(false) : qNavHTML(t, i), `<button type="button" class="return-btn" disabled>Return to tray</button>`)}
   </section>`;
 }
 function wireOrder(section, q, afterSubmit){
@@ -2526,6 +2630,8 @@ function wireOrder(section, q, afterSubmit){
   const placed = new Array(n).fill(null);   // placed[k] = id in slot k
   let sel = null, done = false;              // sel = id of the lifted book
   let flag = null;                           // the two ids marked "Check pair" after a wrong submit
+  const trayOrder = [...q.tray];             // tray display order: starts preset, a returned book goes last
+  const toTrayEnd = id => { trayOrder.splice(trayOrder.indexOf(id), 1); trayOrder.push(id); };
 
   const where = id => placed.indexOf(id);    // slot index, or -1 in the tray
   const book = (key, id, cls, label, shelved) =>
@@ -2537,16 +2643,15 @@ function wireOrder(section, q, afterSubmit){
   function refresh(focusKey){
     const ae = document.activeElement;
     focusKey = focusKey || (ae && section.contains(ae) && ae.dataset.k) || "";
-    trayRow.innerHTML = placed.every(Boolean)
-      ? `<p class="tray-empty">All the books are on the shelf.</p>`
-      : q.tray.map(id => {
-      const k = where(id);
-      return k === -1
-        ? book("t:" + id, id, sel === id ? " selected" : "", "In the tray: " + cnText(CALLNOS[id]))
-        : `<button type="button" class="gap ghost" data-k="t:${id}"${done ? " disabled" : ""}
-             aria-label="${esc(cnText(CALLNOS[id]) + " is in the " + ORD[k] + " slot. Select to take it back to the tray")}">` +
-          `<span>In ${ORD[k]} slot</span></button>`;
-    }).join("");
+    // The tray holds only the books still in it (starting order, returned books last);
+    // while a shelf book is lifted, a return slot follows them. Nothing left: one line of text
+    const inTray = trayOrder.filter(id => where(id) === -1);
+    const back = sel && where(sel) !== -1 && !done
+      ? `<button type="button" class="gap ghost ready" data-k="back"
+           aria-label="${esc("Return " + cnText(CALLNOS[sel]) + " to the tray")}"><span>Return to tray</span></button>` : "";
+    trayRow.innerHTML = inTray.length || back
+      ? inTray.map(id => book("t:" + id, id, sel === id ? " selected" : "", "In the tray: " + cnText(CALLNOS[id]))).join("") + back
+      : `<p class="tray-empty">All the books are on the shelf.</p>`;
     slotRow.innerHTML = placed.map((id, k) => {
       const pos = "Position " + (k + 1) + " of " + n;
       const flagged = !!(flag && flag.includes(id));
@@ -2559,12 +2664,13 @@ function wireOrder(section, q, afterSubmit){
     const full = placed.every(Boolean);
     setStatus(status, done ? "Shelved in order."
       : sel && where(sel) === -1 ? "Now select a slot on the shelf."
-      : sel ? "Select another slot to move it there."
+      : sel ? "Select another slot to move it there, or Return to tray."
       : full ? "Every book is on the shelf. Select Submit, or move a book."
       : "Select a book in the tray, then a slot on the shelf.");
     returnBtn.disabled = !sel || where(sel) === -1;
     setSubmit(submitBtn, !done && full);
-    returnBtn.hidden = hintBtn.hidden = submitBtn.hidden = done;   // once correct, only the way on
+    returnBtn.hidden = submitBtn.hidden = done;           // once correct, only the way on
+    hintBtn.hidden = done || !!q.warm;                    // no hint in a warm-up
     clearBtn.hidden = done || placed.filter(Boolean).length < 2;    // worth a control from two books on
     const el = focusKey && section.querySelector(`[data-k="${CSS.escape(focusKey)}"]`);
     if (el && !el.disabled) el.focus({ preventScroll:true });
@@ -2574,10 +2680,10 @@ function wireOrder(section, q, afterSubmit){
     const b = e.target.closest("[data-k]");
     if (!b || b.disabled || done) return;
     const k = b.dataset.k;
-    if (k.startsWith("t:")){                              // tray book, or its outline
-      const id = k.slice(2), at = where(id);
-      if (at !== -1){ placed[at] = null; sel = id; }      // take it back, still selected
-      else sel = sel === id ? null : id;
+    if (k === "back"){ returnSel(); return; }             // the tray's return slot, while a shelf book is lifted
+    if (k.startsWith("t:")){                              // a tray book: lift it, or put it down
+      const id = k.slice(2);
+      sel = sel === id ? null : id;
       changed(); refresh(k); return;
     }
     const s2 = Number(k.slice(1)), occupant = placed[s2];
@@ -2590,9 +2696,10 @@ function wireOrder(section, q, afterSubmit){
     const from = where(sel);
     placed[s2] = sel;
     if (from !== -1) placed[from] = occupant;            // shelf to shelf: swap (or move into an empty slot)
-    sel = null;                                          // tray to a full slot: its book goes back to the tray
+    else if (occupant) toTrayEnd(occupant);              // tray to a full slot: its book goes back to the tray
+    sel = null;
     // From the tray, keyboard focus goes on to the next book still in the tray
-    const nextInTray = from === -1 && q.tray.find(id => where(id) === -1);
+    const nextInTray = from === -1 && trayOrder.find(id => where(id) === -1);
     changed(); refresh(nextInTray ? "t:" + nextInTray : k);
     announce("Placed in position " + (s2 + 1) + ".");
   });
@@ -2606,28 +2713,30 @@ function wireOrder(section, q, afterSubmit){
     e.preventDefault();
     f[(i + (e.key === "ArrowRight" ? 1 : -1) + f.length) % f.length].focus();
   });
-  returnBtn.addEventListener("click", () => {
+  function returnSel(){          // the lifted shelf book goes back to the tray
     const at = sel ? where(sel) : -1;
     if (at === -1) return;
-    const id = sel; placed[at] = null; sel = null;
+    const id = sel; placed[at] = null; sel = null; toTrayEnd(id);
     changed(); refresh("t:" + id); announce("Returned to the tray.");
-  });
+  }
+  returnBtn.addEventListener("click", returnSel);
   clearBtn.addEventListener("click", () => {
+    placed.filter(Boolean).forEach(toTrayEnd);          // after the tray's books, in shelf order
     placed.fill(null); sel = null;
-    changed(); refresh("t:" + q.tray[0]); announce("All books returned to the tray.");
+    changed(); refresh("t:" + trayOrder[0]); announce("All books returned to the tray.");
   });
   const closeHint = wireHint(section, q);
   function result(restore){       // restore = redraw the last submitted answer, unscored
     const ok = placed.every((id, k) => id === answer[k]);   // the set is finished only when all of it is right
     const pairOk = q.pairs.map(p => where(p.a) < where(p.b));   // scored: designated pairs, relative order
-    if (!restore) record(q.id, pairOk.every(Boolean), [...placed], pairOk);
+    if (!restore && !q.warm) record(q.id, pairOk.every(Boolean), [...placed], pairOk);
     let msg;
     if (ok){
       done = true; sel = null; flag = null;
       msg = testFeedback(q, true);
     } else {
       ({ msg, flag } = t3Wrong(q, placed));               // first out-of-order neighbours, trap or generated
-      msg += " " + esc(T3_SCOPE);
+      msg = q.warm ? q.feedback.wrong : msg + " " + esc(T3_SCOPE);
     }
     const said = showStamp(slot, q, ok, msg);
     refresh();
