@@ -875,7 +875,7 @@ const MODULES = [
     ] },
   { id:"m1", title:"The letter line", showLines:["letters"],
     steps:[
-      { text:"The first line of a call number is the <b>letter line</b>. Our book's letter line is <b>PS</b>. The other lines are greyed out for now, so you can focus on the letters.",
+      { text:"The first line of a call number is the <b>letter line</b>. Our book's letter line is <b>PS</b>. The letters stand for the book's subject area, so books on the same subject are shelved together. The other lines are greyed out for now, so you can focus on the letters.",
         items:["ps350m4"], light:"letters", labels:true },
       { text:"The letter line is read <b>alphabetically</b>. In this example, <b>P</b> comes before <b>Q</b>, so we would shelve the PS book first. When the letter lines are different, they decide the order. When they match, you move down to the next line.",
         items:["ps350m4","q350m4"], light:"letters", labels:true },
@@ -920,7 +920,7 @@ const MODULES = [
     ] },
   { id:"m3", title:"The Cutter number: Letters", showLines:["letters","number","cutter"],
     steps:[
-      { text:"After the number line comes the <b>Cutter number</b>. The Cutter number is composed of one capital letter followed by numbers. Our book's Cutter number is <b>M4</b>.",
+      { text:"After the number line comes the <b>Cutter number</b>. The Cutter number is composed of one capital letter followed by numbers. It usually stands for the author's last name or the book's title, and is named after the librarian Charles Cutter. Our book's Cutter number is <b>M4</b>.",
         items:["ps350m4"], light:"cutter", labels:true },
       { text:"First, compare the Cutter number <b>by its letter</b>. In this case, <b>M</b> comes before <b>T</b>, so our book shelves first. If the letters are different, the numbers don't matter.",
         items:["ps350m4","ps350t2"], light:"cutterLetter", dim:true, labels:true },
@@ -939,7 +939,7 @@ const MODULES = [
     ] },
   { id:"m4", title:"The Cutter number: Numbers", showLines:["letters","number","cutter"],
     steps:[
-      { text:"If the Cutter number letters match, compare the <b>numbers as a decimal</b>. For example, we would read our book's <b>M4</b> as if it were <b>0.4</b>.",
+      { text:"If the Cutter number letters match, compare the <b>numbers as a decimal</b>. For example, we would read our book's <b>M4</b> as if it were <b>0.4</b>. Some libraries, and some older labels, put a dot before the Cutter number (.M4), but this doesn't change how we read it.",
         items:["ps350m4"], light:"cutterDecimal", labels:true },
       { text:"In this example, <b>M38</b> reads as <b>0.38</b>, and our book's <b>M4</b> reads as <b>0.4</b>.",
         items:["ps350m38","ps350m4"], light:"cutterDecimal", dim:true, labels:true },
@@ -2765,7 +2765,7 @@ const RESULTS_COPY = {
   done: "You made it to the end of the shelf!",
   summaryClear:  "You got every question right on your first try! The next step is to practise with real books.",
   summaryMissed: "Nice job completing the tutorial! This is where your shelving skills start. Review your results below, then get ready to practise with real books.",
-  reading: "You've learned every rule you need. Every call number is read the same way: start at the top line, move down while the lines match, and let the first difference decide. The more books you shelve, the more automatic it becomes.",
+  reading: "You've learned the rules you'll use most. Every call number is read the same way: start at the top line, move down while the lines match, and let the first difference decide. The more books you shelve, the more automatic it becomes.",
   printWhat: "Call Number Tutorial: results",   // the printout says what it is, with or without a name
   sheetHead: "Call number review",
   sheet: {
